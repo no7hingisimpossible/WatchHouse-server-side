@@ -34,6 +34,7 @@ async function run() {
 
         app.put('/inventories/:id', async (req, res) => {
             const id = req.params;
+            
             const newQty = req.body;
             console.log(newQty);
             const filter = { _id: ObjectId(id) }
@@ -44,7 +45,7 @@ async function run() {
                 },
             };
             const result = await inventoryCollection.updateOne(filter, updateQty, options);
-            res.send(result)
+            res.send({success: 'Your item delivered'})
 
         })
         app.delete('/inventories/:id', async(req, res) => {
@@ -52,6 +53,13 @@ async function run() {
             const query = {_id: ObjectId(id)}
             console.log(id);
             const result = await inventoryCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.post('/inventories', async(req, res) => {
+            const addedItem = req.body 
+            console.log(addedItem); 
+            const result = await inventoryCollection.insertOne(addedItem)
             res.send(result)
         })
 
