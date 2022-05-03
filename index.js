@@ -62,6 +62,23 @@ async function run() {
             const result = await inventoryCollection.insertOne(addedItem)
             res.send(result)
         })
+        app.get('/inventory', async(req, res)=> {
+            const email = req.query.email;
+            const query = {email: email};
+            console.log(query);
+            const cursor = inventoryCollection.find(query);
+            const userItems = await cursor.toArray();
+            res.send(userItems);
+            
+        })
+        app.delete('/inventory/:id', async(req, res)=>{
+            const id = req.params;
+            const query = {_id: ObjectId(id)}
+            console.log(id);
+            const result = await inventoryCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
 
     } finally {
