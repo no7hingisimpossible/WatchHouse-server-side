@@ -4,6 +4,8 @@ require('dotenv').config();
 const app = express()
 const port = process.env.PORT || 5000;
 
+// middlewares
+
 app.use(cors());
 app.use(express.json());
 
@@ -19,18 +21,25 @@ async function run() {
         const inventoryCollection = client.db('inventory').collection('inventories')
         console.log('db connected');
 
+        // getting all items
+
         app.get('/inventories', async (req, res) => {
             const query = {}
             const cursor = inventoryCollection.find(query)
             const inventory = await cursor.toArray()
             res.send(inventory)
         })
+
+        // getting items for specific id
+
         app.get('/inventories/:id', async (req, res) => {
             const id = req.params;
             const query = { _id: ObjectId(id) }
             const result = await inventoryCollection.findOne(query)
             res.send(result);
         })
+
+        // Upading inventory
 
         app.put('/inventories/:id', async (req, res) => {
             const id = req.params;
@@ -48,6 +57,9 @@ async function run() {
             res.send({success: 'Your item delivered'})
 
         })
+
+        // Deleting item from the inventory
+
         app.delete('/inventories/:id', async(req, res) => {
             const id = req.params;
             const query = {_id: ObjectId(id)}
@@ -62,6 +74,9 @@ async function run() {
             const result = await inventoryCollection.insertOne(addedItem)
             res.send(result)
         })
+
+        // Getting items through Emails
+
         app.get('/inventory', async(req, res)=> {
             const email = req.query.email;
             const query = {email: email};
@@ -71,6 +86,9 @@ async function run() {
             res.send(userItems);
             
         })
+
+        // Deleting user added item
+
         app.delete('/inventory/:id', async(req, res)=>{
             const id = req.params;
             const query = {_id: ObjectId(id)}
