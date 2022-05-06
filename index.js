@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express()
 const port = process.env.PORT || 5000;
@@ -67,12 +68,23 @@ async function run() {
             const result = await inventoryCollection.deleteOne(query)
             res.send(result)
         })
+        
+        // Add items
 
         app.post('/inventories', async(req, res) => {
             const addedItem = req.body 
-            console.log(addedItem); 
-            const result = await inventoryCollection.insertOne(addedItem)
-            res.send(result)
+            const tokenInfo = req.headers.authorization
+            const [email, accessToken] = tokenInfo.split(" ")
+            
+            const decoded = verifyToken(accessToken)
+            
+            if(email === decoded.email){
+                const result = await inventoryCollection.insertOne(addedItem)
+                res.send({success : 'Product uploaded successfully'})
+            }else{
+
+                res.send({success : 'Unauthorised Access'}); 
+            }
         })
 
         // Getting items through Emails
@@ -86,6 +98,12 @@ async function run() {
             res.send(userItems);
             
         })
+        app.post('/login', async(req, res)=>{
+            const email = req.body;
+            const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+            console.log(email);
+            res.send({token})
+        })
 
         // Deleting user added item
 
@@ -96,7 +114,7 @@ async function run() {
             const result = await inventoryCollection.deleteOne(query)
             res.send(result)
         })
-
+        
 
 
     } finally {
@@ -112,3 +130,16 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log("Listening to Port", port);
 })
+function verifyToken(token){
+    let email;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+        if(err){
+            email = 'Invalid Email'
+        }
+        if(decoded){
+            console.log(decoded);
+            email = decoded
+        }
+      });
+      return email 
+}
